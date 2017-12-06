@@ -15,7 +15,8 @@ import torch.optim as optim
 use_cuda = torch.cuda.is_available()
 
 def scale(x):
-    return (x - np.mean(x)) / np.std(x)
+    return x
+    #return (x - np.mean(x)) / np.std(x)
 
 # create dataset
 
@@ -104,12 +105,6 @@ def create_dataset(n_sample_from_class, n_test_sample_from_class, n_valid_percen
     #Y_true = torch.from_numpy(Y_true).float()
     Y_true = torch.LongTensor(Y_true.tolist())
 
-#    if use_cuda:
-#        X_train = X_train.cuda()
-#        #Y_train = Y_train.cuda()
-#        X_test = X_test.cuda()
-#        #Y_true = Y_true.cuda()
-#    
     train = data_utils.TensorDataset(X_train, Y_train)
     train_loader = data_utils.DataLoader(train, batch_size=batch_size, shuffle=True)
     
@@ -123,14 +118,14 @@ def create_dataset(n_sample_from_class, n_test_sample_from_class, n_valid_percen
 
 
 
-n_sample_from_class = 800
-n_test_sample_from_class = 90
+n_sample_from_class = 500
+n_test_sample_from_class = 30
 
 epochs = 100
-batch_size = 64
+batch_size = 128
 learning_rate = 1e-3
 
-n_valid_percent = 0.1
+n_valid_percent = 0.3
 
 train_loader, test_loader, valid_loader = create_dataset(n_sample_from_class, n_test_sample_from_class, n_valid_percent, batch_size)
 
@@ -187,6 +182,9 @@ for data in train_loader:
     else:
         X_valid, Y_valid = Variable(X_valid), Variable(Y_valid)
 
+
+t_loss = np.zeros(epochs)
+
 for ep in range(epochs):
     #  Create a random permutation of the indices of the row vectors.
     
@@ -214,6 +212,7 @@ for ep in range(epochs):
     pred_Y_valid = net(X_valid)
     valid_loss = criterion(pred_Y_valid, Y_valid)
     print ('Epoch [%d/%d], Loss: %.4f' %(ep+1, epochs, valid_loss.data[0]))
+    t_loss[ep] = valid_loss.data[0]
 
 #  Compute and print the final training and test loss
 #  function values
